@@ -142,9 +142,6 @@ addToStoreNar StorePathMetadata{..} nar repair checkSigs = do
       (putText
         . Data.Text.Lazy.toStrict
         . System.Nix.Store.Remote.Builders.buildContentAddressableAddress
-            -- this calls for changing the type of addToStoreNar
-            -- to forall a . (Valid/Named)Algo and a type app
-            @'System.Nix.Hash.SHA256
       )
       contentAddressableAddress
 
@@ -264,8 +261,7 @@ querySubstitutablePaths ps = do
     putPaths ps
   sockGetPaths
 
-queryPathInfoUncached :: forall a . NamedAlgo a
-                      => StorePath
+queryPathInfoUncached :: StorePath
                       -> MonadStore StorePathMetadata
 queryPathInfoUncached path = do
   runOpArgs QueryPathInfo $ do
@@ -277,9 +273,9 @@ queryPathInfoUncached path = do
   deriverPath <- sockGetPathMay
 
   narHashText <- Data.Text.Encoding.decodeUtf8 <$> sockGetStr
-  let narHash = case System.Nix.Hash.decodeBase32 narHashText of
+  let narHash = case System.Nix.Hash.decodeBase32 @'System.Nix.Hash.SHA256 narHashText of
         Left e -> error e
-        Right x -> SomeDigest @a x
+        Right x -> SomeDigest x
 
   references <- sockGetPaths
   registrationTime <- sockGet getTime
@@ -294,7 +290,7 @@ queryPathInfoUncached path = do
       sigs = Data.Set.empty
 
       contentAddressableAddress =
-        case System.Nix.Store.Remote.Parsers.parseContentAddressableAddress @a caString of
+        case System.Nix.Store.Remote.Parsers.parseContentAddressableAddress caString of
           Left e -> error e
           Right x -> Just x
 

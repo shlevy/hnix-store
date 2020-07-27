@@ -19,19 +19,17 @@ import qualified System.Nix.Hash
 
 -- | Marshall `ContentAddressableAddress` to `Text`
 -- in form suitable for remote protocol usage.
-buildContentAddressableAddress :: forall hashAlgo . NamedAlgo hashAlgo
-                               => ContentAddressableAddress
+buildContentAddressableAddress :: ContentAddressableAddress
                                -> Text
 buildContentAddressableAddress =
-  Data.Text.Lazy.Builder.toLazyText . contentAddressableAddressBuilder @hashAlgo
+  Data.Text.Lazy.Builder.toLazyText . contentAddressableAddressBuilder
 
-contentAddressableAddressBuilder :: forall hashAlgo . NamedAlgo hashAlgo
-                               => ContentAddressableAddress
+contentAddressableAddressBuilder :: ContentAddressableAddress
                                -> Builder
 contentAddressableAddressBuilder (Text digest) =
      "text:"
   <> digestBuilder digest
-contentAddressableAddressBuilder (Fixed narHashMode (SomeDigest digest)) =
+contentAddressableAddressBuilder (Fixed narHashMode (SomeDigest (digest :: Digest hashAlgo))) =
      "fixed:"
   <> (Data.Text.Lazy.Builder.fromText $ System.Nix.Hash.algoName @hashAlgo)
   <> digestBuilder digest

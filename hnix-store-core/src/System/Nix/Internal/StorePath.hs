@@ -100,6 +100,7 @@ data ContentAddressableAddress
     -- addToStore. It is addressed according to some hash algorithm
     -- applied to the nar serialization via some 'NarHashMode'.
     Fixed !NarHashMode !SomeNamedDigest
+  deriving (Eq, Ord, Show)
 
 -- | Schemes for hashing a nix archive.
 --
@@ -111,6 +112,7 @@ data NarHashMode
   | -- | Hash an arbitrary nar, including a non-executable regular
     -- file if so desired.
     Recursive
+  deriving (Eq, Show, Ord)
 
 makeStorePathName :: Text -> Either String StorePathName
 makeStorePathName n = case validStorePathName n of
